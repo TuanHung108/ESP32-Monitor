@@ -56,6 +56,12 @@ String currentDate = "";
 
 unsigned long previousMillis = 0;
 const long interval = 5000; // 5 giây lấy mẫu 1 lần
+
+// ---------------- NTP TIMER ----------------
+unsigned long lastNtpSync = 0;
+const unsigned long ntpInterval = 21600000; // 6 giờ
+bool ntpDoneOnce = false;
+
 int oledPage = 0; // Biến cuộn trang OLED
 
 void setup() {
@@ -90,6 +96,7 @@ void setup() {
     delay(500); Serial.print(".");
   }
   Serial.println("\nWiFi OK! IP: " + WiFi.localIP().toString());
+
   
   // 4. Khởi tạo Web Server (Đã bao gồm link Download và Delete)
   server.on("/", handleRoot);
@@ -111,55 +118,87 @@ void setup() {
   if (!sht.begin()) Serial.println("Loi SHT31");
 }
 
+// ================= LOOP =================
 void loop() {
-  // Máy chủ Web luôn lắng nghe
+
   server.handleClient();
-  
-  // Bắt gói tin PMS7003 liên tục
+
+  // ================= NTP =================
+  if (WiFi.status() == WL_CONNECTED) {
+
+    // Sync lần đầu sau 5s
+    if (!ntpDoneOnce && millis() > 5000) {
+      Serial.println("NTP lan dau...");
+      syncTimeWithNTP();
+      ntpDoneOnce = true;
+      lastNtpSync = millis();
+    }
+
+  // Sync mỗi 6 giờ (tránh trùng lúc log)
+    if (millis() - lastNtpSync > ntpInterval) {
+      if (millis() - previousMillis > 1000) { // tránh trùng lúc đang log
+        Serial.println("NTP dinh ky...");
+        syncTimeWithNTP();
+        lastNtpSync = millis();
+      }
+    }
+  }
+
+  // PMS
   if (pms.read(data)) {
     pm1 = data.PM_AE_UG_1_0;
     pm25 = data.PM_AE_UG_2_5;
     pm10 = data.PM_AE_UG_10_0;
   }
 
-  // Đếm thời gian 5 giây 1 nhịp
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    previousMillis = currentMillis;
+  // Lấy mẫu
+  if (millis() - previousMillis >= interval) {
+    previousMillis = millis();
 
     readSensors();
     logToSDCard();
     updateOLED();
-    
-    Serial.println("[" + currentTime + "] IP: " + WiFi.localIP().toString() + " | SD Logged");
+
+    Serial.println("[" + currentTime + "] Logged");
   }
 }
-
 // ================= CÁC HÀM XỬ LÝ =================
 // ================= NTP =================
 void syncTimeWithNTP() {
-  configTime(7*3600, 0, "pool.ntp.org");
+
+  static bool ntpConfigured = false;
+
+  // Chỉ config NTP 1 lần duy nhất
+  if (!ntpConfigured) {
+    configTime(7*3600, 0, "pool.ntp.org");
+    ntpConfigured = true;
+  }
 
   Serial.print("Dong bo NTP");
-  time_t now = time(nullptr);
 
+  time_t now = time(nullptr);
   int retry = 0;
+
+  // Giảm delay + giảm thời gian block
   while (now < 1000000000 && retry < 10) {
-    delay(500);
+    delay(200);  // trước là 500ms → giảm xuống
     Serial.print(".");
     now = time(nullptr);
     retry++;
   }
 
   if (now < 1000000000) {
-    Serial.println("\nLoi NTP!");
+    Serial.println("\nLoi NTP");
     return;
   }
 
   Serial.println("\nOK NTP");
 
   struct tm timeinfo;
-  localtime_r(&now, &timeinfo);
+  if (!localtime_r(&now, &timeinfo)) {
+    Serial.println("Loi localtime");
+    return;
+  }
 
   rtc.adjust(DateTime(
     timeinfo.tm_year + 1900,
@@ -170,9 +209,8 @@ void syncTimeWithNTP() {
     timeinfo.tm_sec
   ));
 
-  Serial.println("RTC updated!");
+  Serial.println("RTC updated");
 }
-
 
 void readSensors() {
   DateTime now = rtc.now();
