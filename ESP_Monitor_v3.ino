@@ -22,6 +22,7 @@ void handleSetTime();
 void readSensors();
 void logToSDCard();
 void updateOLED();
+void syncTimeWithNTP();
 
 // ---------------- CẤU HÌNH PHẦN CỨNG ----------------
 #define SCREEN_WIDTH 128
@@ -56,6 +57,12 @@ String currentDate = "";
 
 unsigned long previousMillis = 0;
 const long interval = 5000; // 5 giây lấy mẫu 1 lần
+
+// ---------------- NTP TIMER ----------------
+unsigned long lastNtpSync = 0;
+const unsigned long ntpInterval = 21600000; // 6 giờ
+bool ntpDoneOnce = false;
+
 int oledPage = 0; // Biến cuộn trang OLED
 
 void setup() {
@@ -116,6 +123,27 @@ void setup() {
 void loop() {
   // Máy chủ Web luôn lắng nghe
   server.handleClient();
+
+  // ================= NTP AUTO =================
+  if (WiFi.status() == WL_CONNECTED) {
+
+    // Sync lần đầu sau 5s
+    if (!ntpDoneOnce && millis() > 5000) {
+      Serial.println("NTP lan dau...");
+      syncTimeWithNTP();
+      ntpDoneOnce = true;
+      lastNtpSync = millis();
+    }
+
+    // Sync mỗi 6 giờ
+    if (millis() - lastNtpSync > ntpInterval) {
+      if (millis() - previousMillis > 1000) { // tránh trùng lúc ghi SD
+        Serial.println("NTP dinh ky...");
+        syncTimeWithNTP();
+        lastNtpSync = millis();
+      }
+    }
+  }
   
   // Bắt gói tin PMS7003 liên tục
   if (pms.read(data)) {
@@ -138,6 +166,51 @@ void loop() {
 }
 
 // ================= CÁC HÀM XỬ LÝ =================
+void syncTimeWithNTP() {
+
+  static bool ntpConfigured = false;
+
+  if (!ntpConfigured) {
+    configTime(7*3600, 0, "pool.ntp.org");
+    ntpConfigured = true;
+  }
+
+  Serial.print("Dong bo NTP");
+
+  time_t now = time(nullptr);
+  int retry = 0;
+
+  while (now < 1000000000 && retry < 10) {
+    delay(200);
+    Serial.print(".");
+    now = time(nullptr);
+    retry++;
+  }
+
+  if (now < 1000000000) {
+    Serial.println("\nLoi NTP");
+    return;
+  }
+
+  Serial.println("\nOK NTP");
+
+  struct tm timeinfo;
+  if (!localtime_r(&now, &timeinfo)) {
+    Serial.println("Loi localtime");
+    return;
+  }
+
+  rtc.adjust(DateTime(
+    timeinfo.tm_year + 1900,
+    timeinfo.tm_mon + 1,
+    timeinfo.tm_mday,
+    timeinfo.tm_hour,
+    timeinfo.tm_min,
+    timeinfo.tm_sec
+  ));
+
+  Serial.println("RTC updated (NTP)");
+}
 
 void readSensors() {
   DateTime now = rtc.now();
