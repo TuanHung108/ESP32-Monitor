@@ -12,8 +12,10 @@ from itertools import combinations
 warnings.filterwarnings("ignore")
 
 # ── CẤU HÌNH ─────────────────────────────────────────────────────
-DATA_DIR   = "./data"        # thư mục chứa file CSV đã tiền xử lý
-OUTPUT_DIR = "./output_plots"
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
+DATA_DIR   = os.path.join(PROJECT_DIR, 'day_measure')
+OUTPUT_DIR = os.path.join(BASE_DIR, 'output_plots')
 DPI        = 150
 
 # Tên cột trong CSV
