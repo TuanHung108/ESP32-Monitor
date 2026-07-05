@@ -1,4 +1,4 @@
-// Implementation of web_service.h
+// Implement web server và endpoint
 // HTTP request handlers and web server management
 
 #include "web_service.h"

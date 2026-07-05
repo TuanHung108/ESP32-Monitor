@@ -1,4 +1,4 @@
-// Implementation of time_service.h
+// Implement đồng bộ thời gian và helper thời gian
 // NTP synchronization and RTC management
 
 #include "time_service.h"
@@ -44,11 +44,12 @@ namespace TimeService {
     
     // Wait for NTP response (up to 10 seconds)
     time_t now = time(nullptr);
-    int retry = 0;
-    while (now < 1000000000 && retry < 50) {  // 50 * 200ms = 10s timeout
-      delay(200);
-      now = time(nullptr);
-      retry++;
+    uint32_t ntp_start_ms = millis();
+    while (now < 1000000000 && millis() - ntp_start_ms < 10000) {
+      if (millis() - ntp_start_ms >= 200) {
+        now = time(nullptr);
+      }
+      yield();
     }
     
     if (now < 1000000000) {

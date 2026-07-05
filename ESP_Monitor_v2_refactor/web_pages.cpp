@@ -222,7 +222,7 @@ String getDashboardPage(float totalMB, float usedMB, float freeMB, float percent
             <div class="table-header-container">
                 <div class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-list-check"></i> Nhật ký đo đạc thời gian thực (Mẫu 5 giây / lần)</div>
                 <div class="btn-group">
-                    <a href="/download" download="datalog.csv" class="btn btn-primary"><i class="fa-solid fa-file-excel"></i> Tải file lịch sử (.CSV)</a>
+                    <a href="/download" download="datalog.csv" class="btn btn-primary"><i class="fa-solid fa-file-excel"></i> Tải file dữ liệu (.CSV)</a>
                     <button onclick="syncTime()" class="btn"><i class="fa-solid fa-arrows-rotate"></i> Đồng bộ giờ hệ thống</button>
                     <button id="delete-history-btn" class="btn btn-danger"><i class="fa-solid fa-trash-can"></i> Xóa toàn bộ lịch sử đo</button>
                 </div>
@@ -232,11 +232,11 @@ String getDashboardPage(float totalMB, float usedMB, float freeMB, float percent
                 <table id="data-table">
                     <thead>
                         <tr>
-                            <th rowspan="2">Thời gian</th>
+                            <th rowspan="2">Thời gian lấy mẫu</th>
                             <th colspan="3">PMS7003 (µg/m³)</th>
                             <th colspan="2">SDS011 (µg/m³)</th>
-                            <th colspan="3">Module BME280</th>
-                            <th colspan="2">Module BMP280</th>
+                            <th colspan="3">BME280</th>
+                            <th colspan="2">BMP280</th>
                             <th colspan="2">SHT31</th>
                             <th colspan="2">HTU21D</th>
                             <th colspan="2">AHT20</th>

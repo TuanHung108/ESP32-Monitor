@@ -1,5 +1,5 @@
-// Implementation of sensor_service.h
-// High-level sensor reading with validation and error recovery
+// Implement service đọc cảm biến
+// Đọc và kiểm tra dữ liệu, xử lý lỗi nhẹ
 
 #include "sensor_service.h"
 #include "time_service.h"

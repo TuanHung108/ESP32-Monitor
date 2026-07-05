@@ -8,7 +8,7 @@
 #include "sensor_driver.h"
 
 // ============ SENSOR SERVICE ============
-// High-level sensor reading with:
+// Service đọc cảm biến với:
 // - Validation (check ranges)
 // - Error recovery (reinit on failure)
 // - Fallback values (use last-known-good data)

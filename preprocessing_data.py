@@ -3,7 +3,7 @@ import os
 from glob import glob
 
 # ================= CONFIG =================
-INPUT_PATTERN = "C:/Users/PC/Downloads/VXL/Code/Project/Data/datalog*.csv"
+INPUT_PATTERN = "C:/Users/PC/Downloads/VXL/Code/Project/Data_Cleaned/datalog14.csv"
 OUTPUT_DIR = "C:/Users/PC/Downloads/VXL/Code/Project/day_measure"
 SAMPLE_INTERVAL = "5s"
 
@@ -68,7 +68,7 @@ for day, df_day in df.groupby(df.index.date):
 
     df_resampled = df_day.resample(
         SAMPLE_INTERVAL,
-        origin=start_time   # 🔥 giữ pha thời gian
+        origin=start_time   # giữ pha thời gian
     ).mean()
 
     # ===== STEP 8: XỬ LÝ GAP =====
@@ -82,6 +82,21 @@ for day, df_day in df.groupby(df.index.date):
 
     # Khôi phục lại gap lớn = NaN
     df_resampled_interp[large_gap_mask] = None
+
+    # ===== BỔ SUNG: ĐỊNH DẠNG LÀM TRÒN RIÊNG CHO SENSORS =====
+    # Các cột thuộc cảm biến SDS011 (float làm tròn 1 chữ số thập phân)
+    sds_cols = ['SDS_PM2.5 (µg/m³)', 'SDS_PM10 (µg/m³)']
+    
+    for col in df_resampled_interp.columns:
+        if col in sds_cols:
+            df_resampled_interp[col] = df_resampled_interp[col].round(1)
+        elif 'PMS_' in col or 'PM1.0' in col or 'PM2.5' in col or 'PM10' in col:
+            # Giữ nguyên logic cũ cho các cột bụi mịn PMS (ép về số nguyên int nếu không có NaN)
+            # Tuy nhiên do có NaN từ hàm gap, ta làm tròn 0 chữ số thập phân trước để bảo toàn định dạng số
+            df_resampled_interp[col] = df_resampled_interp[col].round(0)
+        else:
+            # Nhiệt độ, độ ẩm, áp suất giữ nguyên làm tròn 2 chữ số thập phân của bạn
+            df_resampled_interp[col] = df_resampled_interp[col].round(2)
 
     # ===== STEP 9: THỐNG KÊ =====
     total_points = len(df_resampled_interp)

@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// ============ HARDWARE CONFIGURATION ============
+// ============ CẤU HÌNH PHẦN CỨNG ============
 
 // OLED Display
 #define SCREEN_WIDTH        128
@@ -34,7 +34,7 @@
 #define BMP280_ADDR         0x77
 #define SHT31_ADDR          0x44
 
-// ============ SAMPLING & TIMING ============
+// ============ LẤY MẪU VÀ THỜI GIAN ============
 
 // Main sampling interval (5 seconds)
 #define SAMPLE_INTERVAL_MS  5000
@@ -54,7 +54,7 @@
 // CSV logging interval (same as sample interval)
 #define LOG_CSV_INTERVAL_MS SAMPLE_INTERVAL_MS
 
-// ============ LIMITS & THRESHOLDS ============
+// ============ GIỚI HẠN VÀ NGƯỠNG ============
 
 // Temperature range validation (°C)
 #define TEMP_MIN            -20.0f
@@ -75,7 +75,7 @@
 // Logger
 #define LOG_BUFFER_SIZE     10  // Number of log entries to keep
 
-// ============ NETWORK CONFIGURATION ============
+// ============ CẤU HÌNH MẠNG ============
 
 // WiFi credentials
 #define WIFI_SSID           "BinhHung"
@@ -94,7 +94,7 @@
 #define NTP_SERVER          "pool.ntp.org"
 #define TIMEZONE_OFFSET     7  // UTC+7 for Vietnam
 
-// ============ SD CARD & STORAGE ============
+// ============ THẺ SD VÀ LƯU TRỮ ============
 
 #define CSV_FILENAME        "/datalog.csv"
 #define CSV_BOM_BYTES       3  // UTF-8 BOM: 0xEF, 0xBB, 0xBF
@@ -102,11 +102,11 @@
 // CSV header (semicolon-separated)
 #define CSV_HEADER          "Ngày đo;Giờ đo;PMS_PM1.0 (µg/m³);PMS_PM2.5 (µg/m³);PMS_PM10 (µg/m³);SDS_PM2.5 (µg/m³);SDS_PM10 (µg/m³);BME_Nhiệt (°C);BME_Ẩm (%);BME_Áp suất (hPa);BMP_Nhiệt (°C);BMP_Áp suất (hPa);HTU_Nhiệt (°C);HTU_Ẩm (%);SHT_Nhiệt (°C);SHT_Ẩm (%);AHT_Nhiệt (°C);AHT_Ẩm (%)"
 
-// ============ WATCHDOG TIMER ============
+// ============ WATCHDOG ============
 
 #define WATCHDOG_TIMEOUT_S  30  // 30 second watchdog
 
-// ============ FEATURE FLAGS ============
+// ============ CỜ TÍNH NĂNG ============
 
 #define ENABLE_LOGGING      1   // Enable structured logging
 #define ENABLE_WATCHDOG     1   // Enable ESP32 watchdog timer

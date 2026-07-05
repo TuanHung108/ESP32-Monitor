@@ -1,4 +1,4 @@
-// Implementation of sensor_driver.h
+// Implement driver thấp cho cảm biến
 // Raw sensor I/O operations (no validation, no error recovery)
 
 #include "sensor_driver.h"
@@ -45,7 +45,10 @@ namespace SensorDriver {
     
     // Initialize UART sensors
     g_pms.wakeUp();  // Wake up PMS7003
-    delay(100);
+    uint32_t pms_wakeup_ms = millis();
+    while (millis() - pms_wakeup_ms < 100) {
+      yield();
+    }
     
     g_sds.begin();
     g_sds.setActiveReportingMode();
